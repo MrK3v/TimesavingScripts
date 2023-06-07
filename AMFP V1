@@ -1,0 +1,202 @@
+# Created by Kløpfel Media
+# i am lazy, but smart, Thus i made this program to save time dooing work.
+# This program is a tool that helps you sort out Raw files from jpg files.
+# It also pastes files from defined locations into folders where the script is placed.
+
+import os
+import shutil
+import ctypes
+import sys
+
+# Function to move .ARW files to a "Raw" folder, create a "Kjøpt" folder, and sort the ARW files
+def sort_arw():
+    # Run the script starting from the current directory
+    current_directory = os.getcwd()
+    already_sorted = False  # Flag to indicate if folders are already sorted
+
+    for folder in os.listdir(current_directory):
+        folder_path = os.path.join(current_directory, folder)
+        if os.path.isdir(folder_path):
+            # Check if the folder already contains a flag file
+            flag_file = os.path.join(folder_path, 'script_processed.flag')
+            if os.path.exists(flag_file):
+                already_sorted = True
+                break
+
+            # Create a "Raw" folder if it doesn't exist
+            raw_folder = os.path.join(folder_path, 'Raw')
+            os.makedirs(raw_folder, exist_ok=True)
+
+            # Create a "Kjøpt" folder if it doesn't exist
+            kjopt_folder = os.path.join(folder_path, 'Kjøpt')
+            os.makedirs(kjopt_folder, exist_ok=True)
+
+            # Move .ARW files to the "Raw" folder
+            moved_folders = []
+            for filename in os.listdir(folder_path):
+                if filename.endswith('.ARW'):
+                    file_path = os.path.join(folder_path, filename)
+                    destination = os.path.join(raw_folder, filename)
+                    shutil.move(file_path, destination)
+                    moved_folders.append(folder_path)
+            if moved_folders:
+                print(f"Moved {len(moved_folders)} ARW file(s) to 'Raw' folder in the following folder(s):")
+                for moved_folder in moved_folders:
+                    print(moved_folder)
+
+            # Create the flag file in the current directory
+            open(flag_file, 'w').close()
+
+            # Set the flag file as hidden (Windows only)
+            if os.name == 'nt':
+                try:
+                    FILE_ATTRIBUTE_HIDDEN = 0x02
+                    ret = ctypes.windll.kernel32.SetFileAttributesW(flag_file, FILE_ATTRIBUTE_HIDDEN)
+                    if ret == 0:
+                        print(f"Failed to set the flag file as hidden: {flag_file}")
+                except Exception as e:
+                    print(f"An error occurred while setting the flag file as hidden: {e}")
+
+    if already_sorted:
+        print("Folders seem to already be sorted")
+        return
+
+    input("Press Enter to continue...")
+
+
+    if already_sorted:
+        print("Folders seem to already be sorted")
+
+        while True:
+            print()
+            print("Press Enter to go back to the menu.")
+            print("Press Esc to close the window.")
+
+            key = input()
+            if key == '\x1b':  # Check if the Esc key is pressed
+                os._exit(0)  # Exit the program
+            elif key == '':
+                break
+
+
+# Function to transfer files from source directory to folders in the script's directory
+def add_files(source_dir):
+    # Run the script starting from the current directory
+    current_directory = os.getcwd()
+    for folder in os.listdir(current_directory):
+        folder_path = os.path.join(current_directory, folder)
+        if os.path.isdir(folder_path):
+            # Copy files from the source directory to the folder
+            for filename in os.listdir(source_dir):
+                source_file = os.path.join(source_dir, filename)
+                destination = os.path.join(folder_path, filename)
+                shutil.copy2(source_file, destination)
+                print(f"Copied {filename} to {destination}")
+
+# Function to remove all flag files
+def remove_flag_files():
+    # Run the script starting from the current directory
+    current_directory = os.getcwd()
+    for folder in os.listdir(current_directory):
+        folder_path = os.path.join(current_directory, folder)
+        if os.path.isdir(folder_path):
+            # Remove the flag file if it exists
+            flag_file = os.path.join(folder_path, 'script_processed.flag')
+            if os.path.exists(flag_file):
+                os.remove(flag_file)
+                print(f"Removed flag file in {folder_path}")
+
+# Function to print the title text in green
+def print_title(text):
+    GREEN = '\033[92m'
+    ENDC = '\033[0m'
+    print(GREEN + text + ENDC)
+
+# Function to clear the screen
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+# Function to display progress messages
+def display_progress():
+    print("Working..")
+
+# Function to display process completion message
+def display_completion():
+    print("Process Complete")
+
+# Function to prompt for continuing or closing the window
+def prompt_continue():
+    print()
+    print("Press Enter to go back to the menu.")
+    print("Press Esc to close the window.")
+
+# Print the title text in green
+print_title("ARW sort & file printer")
+
+while True:
+    # Clear the screen
+    clear_screen()
+
+    # Print the title text in green again
+    print_title("ARW sort & file printer")
+
+    # Display the options
+    print()
+    print("Choose an option:")
+    print("1 - Sort ARW")
+    print("2 - Remove .flag files")
+    print("3 - Event Foto")
+    print("4 - ----------")
+    print("===============================")
+    
+    # Get the user's choice
+    choice = input("Enter the option number: ")
+
+    # Handle the selected option
+    if choice == '1':
+        clear_screen()
+        print_title("ARW sort & file printer")
+        display_progress()
+        sort_arw()
+        display_completion()
+        prompt_continue()
+        key = input()
+        if key == '\x1b':  # Check if the Esc key is pressed
+            os._exit(0)  # Exit the program
+    elif choice == '2':
+        clear_screen()
+        print_title("ARW sort & file printer")
+        display_progress()
+        remove_flag_files()
+        display_completion()
+        prompt_continue()
+        key = input()
+        if key == '\x1b':  # Check if the Esc key is pressed
+            os._exit(0)  # Exit the program            
+    elif choice == '3':
+        clear_screen()
+        print_title("ARW sort & file printer")
+        display_progress()
+        source_dir = 'F:\Admin\EventVedlegg'  # Replace with your desired source directory
+        add_files(source_dir)
+        display_completion()
+        prompt_continue()
+        key = input()
+        if key == '\x1b':  # Check if the Esc key is pressed
+            os._exit(0)  # Exit the program
+    
+    elif choice == '4':
+        clear_screen()
+        print_title("ARW sort & file printer")
+        #display_progress()
+        #source_dir = 'I:\Have\NoIdea\WhereThisIs'  # Replace with your desired source directory
+        #add_files(source_dir)
+        #display_completion()
+        print("You selected Option 4. This option is a placeholder for future functionality.") #Remove the # on the above code, and remove this line to enable option 4.
+        prompt_continue()
+        key = input()
+        if key == '\x1b':  # Check if the Esc key is pressed
+            os._exit(0)  # Exit the program
+    else:
+        print("Invalid option. Press Enter to try again.")
+        input()
