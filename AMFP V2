@@ -8,7 +8,7 @@ import shutil
 import ctypes
 import sys
 
-# Function to move .ARW files to a "Raw" folder, create a "Kjøpt" folder, and sort the ARW files
+# Function 1: move .ARW files to a "Raw" folder, create a "Kjøpt" folder, and sort the ARW files
 def sort_arw():
     # Run the script starting from the current directory
     current_directory = os.getcwd()
@@ -79,7 +79,7 @@ def sort_arw():
                 break
 
 
-# Function to transfer files from source directory to folders in the script's directory
+# Function 2: transfer files from source directory to folders in the script's directory
 def add_files(source_dir):
     # Run the script starting from the current directory
     current_directory = os.getcwd()
@@ -93,7 +93,7 @@ def add_files(source_dir):
                 shutil.copy2(source_file, destination)
                 print(f"Copied {filename} to {destination}")
 
-# Function to remove all flag files
+# Function 3: remove all flag files
 def remove_flag_files():
     # Run the script starting from the current directory
     current_directory = os.getcwd()
@@ -106,6 +106,24 @@ def remove_flag_files():
                 os.remove(flag_file)
                 print(f"Removed flag file in {folder_path}")
 
+# Function 4: delete .PDF and .ZIP files in the script's directory
+def delete_files():
+    # Run the script starting from the current directory
+    current_directory = os.getcwd()
+    deleted_files = 0
+    
+    for root, dirs, files in os.walk(current_directory):
+        for file in files:
+            if file.endswith('.pdf') or file.endswith('.zip'):
+                file_path = os.path.join(root, file)
+                os.remove(file_path)
+                deleted_files += 1
+    
+    if deleted_files > 0:
+        print(f"Deleted {deleted_files} file(s).")
+    else:
+        print("No .PDF or .ZIP files found.")
+        
 # Function to print the title text in green
 def print_title(text):
     GREEN = '\033[92m'
@@ -144,11 +162,11 @@ while True:
     print()
     print("Choose an option:")
     print("1 - Sort ARW")
-    print("2 - Remove .flag files")
-    print("3 - Event Foto")
-    print("4 - ----------")
+    print("2 - Add Files")
+    print("3 - Remove .flag files")
+    print("4 - Delete .PDF and .ZIP files. Beware: Will delete ALL files.")
     print("===============================")
-    
+
     # Get the user's choice
     choice = input("Enter the option number: ")
 
@@ -163,17 +181,8 @@ while True:
         key = input()
         if key == '\x1b':  # Check if the Esc key is pressed
             os._exit(0)  # Exit the program
+
     elif choice == '2':
-        clear_screen()
-        print_title("ARW sort & file printer")
-        display_progress()
-        remove_flag_files()
-        display_completion()
-        prompt_continue()
-        key = input()
-        if key == '\x1b':  # Check if the Esc key is pressed
-            os._exit(0)  # Exit the program            
-    elif choice == '3':
         clear_screen()
         print_title("ARW sort & file printer")
         display_progress()
@@ -185,18 +194,27 @@ while True:
         if key == '\x1b':  # Check if the Esc key is pressed
             os._exit(0)  # Exit the program
     
+    elif choice == '3':
+        clear_screen()
+        print_title("ARW sort & file printer")
+        display_progress()
+        remove_flag_files()
+        display_completion()
+        prompt_continue()
+        key = input()
+        if key == '\x1b':  # Check if the Esc key is pressed
+            os._exit(0)  # Exit the program            
+    
     elif choice == '4':
         clear_screen()
         print_title("ARW sort & file printer")
-        #display_progress()
-        #source_dir = 'I:\Have\NoIdea\WhereThisIs'  # Replace with your desired source directory
-        #add_files(source_dir)
-        #display_completion()
-        print("You selected Option 4. This option is a placeholder for future functionality.") #Remove the # on the above code, and remove this line to enable option 4.
+        display_progress()
+        delete_files()
         prompt_continue()
         key = input()
         if key == '\x1b':  # Check if the Esc key is pressed
             os._exit(0)  # Exit the program
+
     else:
         print("Invalid option. Press Enter to try again.")
         input()
