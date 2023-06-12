@@ -1,11 +1,13 @@
 # Created by Kløpfel Media
 # i am lazy, but smart, Thus i made this program to save time dooing work.
 # This program is a tool that helps you sort out Raw files from jpg files.
-# It also pastes files from defined locations into folders where the script is placed.
+# After that it will help you transfer files into several folders, and then make them into a zip file.
+# Misstakes happen, soo i added a function to delete all the PDF's and zip files
 
 import os
 import shutil
 import ctypes
+import zipfile
 import sys
 
 # Function 1: move .ARW files to a "Raw" folder, create a "Kjøpt" folder, and sort the ARW files
@@ -93,6 +95,7 @@ def add_files(source_dir):
                 shutil.copy2(source_file, destination)
                 print(f"Copied {filename} to {destination}")
 
+
 # Function 3: remove all flag files
 def remove_flag_files():
     # Run the script starting from the current directory
@@ -124,6 +127,46 @@ def delete_files():
     else:
         print("No .PDF or .ZIP files found.")
         
+# Function 5: Create a ZIP file with PDF files and a JPEG folder
+def create_zip(folder):
+    folder_name = os.path.basename(folder)
+    zip_file_name = f"{folder_name}_Preview.zip"
+    
+    pdf_files = []
+    jpeg_folder = os.path.join(folder, "JPEG")
+
+    for file_name in os.listdir(folder):
+        file_path = os.path.join(folder, file_name)
+        if os.path.isfile(file_path):
+            if file_name.endswith(".pdf"):
+                pdf_files.append(file_path)
+
+    with zipfile.ZipFile(zip_file_name, "w") as zip_file:
+        for pdf_file in pdf_files:
+            zip_file.write(pdf_file, os.path.basename(pdf_file))
+
+        # Check if the "JPEG" folder exists and add it to the ZIP file
+        if os.path.exists(jpeg_folder) and os.path.isdir(jpeg_folder):
+            for file_name in os.listdir(jpeg_folder):
+                file_path = os.path.join(jpeg_folder, file_name)
+                if os.path.isfile(file_path):
+                    zip_file.write(file_path, os.path.join("JPEG", file_name))
+
+    print(f"Created zip file '{zip_file_name}' with {len(pdf_files)} PDF file(s)")
+
+# Run function 5 script starting from the current directory
+current_directory = os.getcwd()
+
+def process_folders():
+    for folder_name in os.listdir(current_directory):
+        folder_path = os.path.join(current_directory, folder_name)
+        if os.path.isdir(folder_path):
+            print(f"Processing folder: {folder_name}")
+            create_zip(folder_path)
+            print()
+
+process_folders()
+
 # Function to print the title text in green
 def print_title(text):
     GREEN = '\033[92m'
@@ -165,6 +208,7 @@ while True:
     print("2 - Add Files")
     print("3 - Remove .flag files")
     print("4 - Delete .PDF and .ZIP files. Beware: Will delete ALL files.")
+    print("5 - Create ZIP with PDF files and JPEG folder")
     print("===============================")
 
     # Get the user's choice
@@ -210,6 +254,17 @@ while True:
         print_title("ARW sort & file printer")
         display_progress()
         delete_files()
+        prompt_continue()
+        key = input()
+        if key == '\x1b':  # Check if the Esc key is pressed
+            os._exit(0)  # Exit the program
+    
+    elif choice == '5':
+        clear_screen()
+        print_title("ARW sort & file printer")
+        display_progress()
+        process_folders()
+        display_completion()
         prompt_continue()
         key = input()
         if key == '\x1b':  # Check if the Esc key is pressed
